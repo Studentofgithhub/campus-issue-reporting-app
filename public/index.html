@@ -1,0 +1,84 @@
+<!DOCTYPE html>
+<html>
+<head>
+  <title>Campus Issue Reporting</title>
+  <link rel="stylesheet" href="style.css">
+</head>
+
+<body>
+
+<h2>Report a Campus Issue</h2>
+
+<!-- Issue category -->
+<select id="category">
+  <option>Electricity</option>
+  <option>Water</option>
+  <option>Cleanliness</option>
+  <option>Wi-Fi</option>
+  <option>Food-Service</option>
+</select>
+
+<br><br>
+
+<!-- Location input -->
+<input type="text" id="location" placeholder="Enter location">
+
+<br><br>
+
+<!-- Issue description -->
+<textarea id="description" placeholder="Describe the issue"></textarea>
+
+<br><br>
+
+<button onclick="submitIssue()">Submit Issue</button>
+
+<!-- Firebase Script -->
+<script type="module">
+
+/* STEP 1: Import Firebase functions */
+import { initializeApp } from
+"https://www.gstatic.com/firebasejs/10.7.1/firebase-app.js";
+
+import { getFirestore, collection, addDoc }
+from "https://www.gstatic.com/firebasejs/10.7.1/firebase-firestore.js";
+
+/* STEP 2: Firebase configuration */
+const firebaseConfig = {
+  apiKey: "AIzaSyBFFTJIIvMDtYYVxGKcXI2ayu1qWBcsA7Q",
+  authDomain: "campus-issue-app.firebaseapp.com",
+  projectId: "campus-issue-app",
+  storageBucket: "campus-issue-app.firebasestorage.app",
+  messagingSenderId: "911984640360",
+  appId: "1:911984640360:web:6ca316b6f08bd74d3c16dd"
+};
+/* STEP 3: Initialize Firebase */
+const app = initializeApp(firebaseConfig);
+
+/* STEP 4: Connect to Firestore */
+const db = getFirestore(app);
+
+/* STEP 5: Function to submit issue */
+async function submitIssue() {
+
+  // Read values from HTML
+  const category = document.getElementById("category").value;
+  const location = document.getElementById("location").value;
+  const description = document.getElementById("description").value;
+
+  /* STEP 6: Add data to Firestore */
+  await addDoc(collection(db, "issues"), {
+    category: category,
+    location: location,
+    description: description,
+    status: "Pending",
+    timestamp: new Date()
+  });
+
+  alert("Issue submitted successfully!");
+
+}
+window.submitIssue = submitIssue;
+</script>
+
+</body>
+</html>

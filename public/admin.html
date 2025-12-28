@@ -1,0 +1,96 @@
+<!DOCTYPE html>
+<html>
+<head>
+  <title>Admin Dashboard</title>
+  <style>
+    .issue-card {
+      border: 1px solid black;
+      padding: 10px;
+      margin: 10px;
+      border-radius: 5px;
+    }
+    .resolved {
+      color: green;
+      font-weight: bold;
+    }
+    button {
+      padding: 5px 10px;
+      cursor: pointer;
+    }
+  </style>
+</head>
+<body>
+
+<h2>Admin Dashboard</h2>
+<div id="issueList"></div>
+
+<script type="module">
+import { initializeApp } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-app.js";
+import { getFirestore, collection, getDocs, doc, updateDoc } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-firestore.js";
+
+const firebaseConfig = {
+  apiKey: "AIzaSyBFFTJIIvMDtYYVxGKcXI2ayu1qWBcsA7Q",
+  authDomain: "campus-issue-app.firebaseapp.com",
+  projectId: "campus-issue-app",
+  storageBucket: "campus-issue-app.firebasestorage.app",
+  messagingSenderId: "911984640360",
+  appId: "1:911984640360:web:6ca316b6f08bd74d3c16dd"
+};
+
+const app = initializeApp(firebaseConfig);
+const db = getFirestore(app);
+
+const issueListDiv = document.getElementById("issueList");
+
+// Function to render issues dynamically
+function renderIssues(issues) {
+  issueListDiv.innerHTML = ""; // Clear existing list
+
+  issues.forEach(issueObj => {
+    const card = document.createElement("div");
+    card.className = "issue-card";
+
+    card.innerHTML = `
+      <b>${issueObj.data.category}</b><br>
+      ${issueObj.data.description}<br>
+      Location: ${issueObj.data.location}<br>
+      Status: <span class="${issueObj.data.status === 'Resolved' ? 'resolved' : ''}">${issueObj.data.status}</span><br>
+    `;
+
+    if (issueObj.data.status === "Pending") {
+      const btn = document.createElement("button");
+      btn.textContent = "Mark as Resolved";
+      btn.onclick = async () => {
+        await markResolved(issueObj.id);
+        issueObj.data.status = "Resolved"; // Update local object
+        renderIssues(issues); // Re-render list
+      };
+      card.appendChild(btn);
+    }
+
+    issueListDiv.appendChild(card);
+  });
+}
+
+// Fetch issues from Firestore
+async function fetchIssues() {
+  const querySnapshot = await getDocs(collection(db, "issues"));
+  const issues = [];
+  querySnapshot.forEach(docSnap => {
+    issues.push({ id: docSnap.id, data: docSnap.data() });
+  });
+  renderIssues(issues);
+}
+
+// Mark issue as resolved in Firestore
+async function markResolved(issueId) {
+  const issueRef = doc(db, "issues", issueId);
+  await updateDoc(issueRef, { status: "Resolved" });
+  alert("Issue marked as resolved!");
+}
+
+fetchIssues(); // Initial load
+
+</script>
+</body>
+</html>
